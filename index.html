@@ -35,8 +35,11 @@ nav button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 @media print{
  body>main,nav{display:none!important}
  #pr{display:block;color:#000;background:#fff}
- #pr .pg{page-break-after:always;border:1px solid #222}
- #pr .pg:last-child{page-break-after:auto}
+ @page{margin:10mm}
+ html,body{height:auto!important;overflow:visible!important;padding:0!important}
+ #pr .pg{border:1px solid #222}
+ #pr .p1{break-after:page;page-break-after:always}
+ #pr>div:last-child{break-after:auto;page-break-after:auto}
  #pr .hd{border-bottom:1px solid #222}
  #pr .d{text-align:center;font-weight:700;color:#0b6fb8;padding:6px;border-bottom:1px solid #222}
  #pr .l{background:#eee;color:#8a3b12;font-style:italic;font-size:12px;padding:3px 8px}
@@ -78,7 +81,7 @@ function render(){
   ["t1","t2","tt"].forEach(function(id,i){document.getElementById(id).className=(page===i+1)?"on":""});
   if(page===3){
     a.className="";
-    a.innerHTML='<div class="hd">Strumenti</div><div class="tools"><button onclick="pdf()">Salva come PDF</button><button onclick="share()">Condividi testo</button><button onclick="copyTxt()">Copia testo</button><button onclick="dup()">Duplica per altra data</button><button onclick="reset()">Azzera modulo</button></div><div id="msg"></div>';
+    a.innerHTML='<div class="hd">Strumenti</div><div class="tools"><button onclick="pdf(0)">PDF: tutte e due le pagine</button><button onclick="pdf(1)">PDF: solo pagina 1</button><button onclick="pdf(2)">PDF: solo pagina 2</button><button onclick="share()">Condividi testo</button><button onclick="copyTxt()">Copia testo</button><button onclick="dup()">Duplica per altra data</button><button onclick="reset()">Azzera modulo</button></div><div id="msg"></div>';
     return;
   }
   var isOne=page===1;
@@ -97,9 +100,10 @@ function text(){
   sec("Inizio adunanza",P1);sec("Fine del discorso",P2);
   return t.join("\n").trim();
 }
-function pdf(){
+function pdf(w){
   function pg(title,cls,arr){return '<div class="pg"><div class="hd '+cls+'">'+title+'</div><div class="d">'+esc(longDate(S.date))+'</div>'+arr.map(function(x){return (x[1]?'<div class="l">'+esc(x[1])+':</div>':'')+'<div class="v'+(x[2]==="t"||x[2]==="T"?' t':'')+(x[2]==="n"?' n':'')+'">'+esc(S.f[x[0]]||"")+'</div>'}).join("")+'</div>'}
-  document.getElementById("pr").innerHTML='<div class="p1">'+pg("Inizio adunanza","",P1)+'</div><div class="p2">'+pg("Fine del discorso","",P2)+'</div>';
+  var h="";if(w!==2)h+='<div class="p1">'+pg("Inizio adunanza","",P1)+'</div>';if(w!==1)h+='<div class="p2">'+pg("Fine del discorso","",P2)+'</div>';
+  document.getElementById("pr").innerHTML=h;
   window.print();
 }
 function say(m){var e=document.getElementById("msg");if(e)e.textContent=m}
