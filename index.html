@@ -88,6 +88,7 @@ function render(){
    +(isOne?P1:P2).map(field).join("");
   var dt=document.getElementById("dt");
   dt.addEventListener("change",function(){S.date=dt.value;save();document.getElementById("dl").textContent=longDate(S.date)});
+  dt.addEventListener("click",function(){try{if(dt.showPicker)dt.showPicker()}catch(e){}});
   a.querySelectorAll("[data-k]").forEach(function(el){el.addEventListener("input",function(){S.f[el.dataset.k]=el.value;save()})});
 }
 function text(){
