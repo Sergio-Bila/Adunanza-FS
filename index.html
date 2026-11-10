@@ -30,6 +30,7 @@ nav button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .tools{display:flex;flex-wrap:wrap;gap:8px;padding:12px 8px}
 .tools button{flex:1 1 45%;padding:10px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
 #msg{text-align:center;font-size:13px;color:var(--blue);min-height:18px}
+.dw{position:relative;border-bottom:1px solid var(--line)}.dw div{text-align:center;font-weight:700;color:var(--blue);padding:10px 8px;font-size:17px}.dw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;background:transparent}
 #pr{display:none}
 @media print{
  body>main,nav{display:none!important}
@@ -83,10 +84,10 @@ function render(){
   var isOne=page===1;
   a.className=isOne?"p1":"p2";
   a.innerHTML='<div class="hd">'+(isOne?"Inizio adunanza":"Fine del discorso")+'</div>'
-   +'<input type="date" class="date" id="dt" value="'+S.date+'">'
+   +'<div class="dw"><div id="dl">'+esc(longDate(S.date))+'</div><input type="date" id="dt" value="'+S.date+'"></div>'
    +(isOne?P1:P2).map(field).join("");
   var dt=document.getElementById("dt");
-  dt.addEventListener("change",function(){S.date=dt.value;save()});
+  dt.addEventListener("change",function(){S.date=dt.value;save();document.getElementById("dl").textContent=longDate(S.date)});
   a.querySelectorAll("[data-k]").forEach(function(el){el.addEventListener("input",function(){S.f[el.dataset.k]=el.value;save()})});
 }
 function text(){
