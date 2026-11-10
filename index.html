@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c9e9f9">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>Adunanza</title>
+<style>
+:root{--bg:#fff;--fg:#111;--lab:#8a3b12;--row:#f0f0f0;--line:#222;--blue:#0b6fb8;--h1:#cdeafa;--h2:#dcefd2;--bar:#f6f6f6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--fg:#f2f2f2;--lab:#e6a27c;--row:#23272c;--line:#555;--blue:#6bb8f0;--h1:#1d3a4d;--h2:#24401f;--bar:#1c1f23}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#f2f2f2;--lab:#e6a27c;--row:#23272c;--line:#555;--blue:#6bb8f0;--h1:#1d3a4d;--h2:#24401f;--bar:#1c1f23}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Roboto,sans-serif}
+body{padding-bottom:84px}
+main{max-width:640px;margin:0 auto;border:1px solid var(--line);border-top:0}
+.hd{text-align:center;font-style:italic;padding:10px;border-bottom:1px solid var(--line);text-transform:uppercase}
+.p1 .hd{background:var(--h1)}.p2 .hd{background:var(--h2)}
+.date{display:block;width:100%;text-align:center;font-weight:700;color:var(--blue);background:var(--bg);border:0;border-bottom:1px solid var(--line);padding:8px;font-size:16px}
+.lab{background:var(--row);color:var(--lab);font-style:italic;font-size:14px;padding:4px 8px}
+.f{display:block;width:100%;border:0;border-bottom:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;font-size:19px;padding:10px 8px;text-align:center;font-weight:700;outline:none;resize:vertical}
+.f.n{font-weight:400}
+textarea.f{text-align:left;font-weight:400;min-height:90px}
+textarea.big{min-height:220px}
+.f:focus{background:var(--row)}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--bar);border-top:1px solid var(--line);display:flex;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;padding:10px 4px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;padding:12px 8px}
+.tools button{flex:1 1 45%;padding:10px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+#msg{text-align:center;font-size:13px;color:var(--blue);min-height:18px}
+#pr{display:none}
+@media print{
+ body>main,nav{display:none!important}
+ #pr{display:block;color:#000;background:#fff}
+ #pr .pg{page-break-after:always;border:1px solid #222}
+ #pr .pg:last-child{page-break-after:auto}
+ #pr .hd{border-bottom:1px solid #222}
+ #pr .d{text-align:center;font-weight:700;color:#0b6fb8;padding:6px;border-bottom:1px solid #222}
+ #pr .l{background:#eee;color:#8a3b12;font-style:italic;font-size:12px;padding:3px 8px}
+ #pr .v{text-align:center;font-weight:700;font-size:16px;padding:8px;border-bottom:1px solid #222;white-space:pre-wrap;min-height:20px}
+ #pr .v.t{text-align:left;font-weight:400;min-height:60px}
+ #pr .v.n{font-weight:400}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="pr"></div>
+<nav>
+  <button id="t1" onclick="go(1)">1 · Inizio</button>
+  <button id="t2" onclick="go(2)">2 · Fine</button>
+  <button id="tt" onclick="go(3)">Strumenti</button>
+</nav>
+<script>
+var KEY="adunanza-v1";
+var P1=[["pres","Presidente","i","Pinco Pallino"],["ben","Benvenuto ai presenti","t",""],["cant","Cantico scelto da oratore","i","Cantico n."],["prega","Preghiera","i","Pinco Pallino"],["disc","Discorso pubblico","i","Tema del discorso"],["orat","Oratore","i","Caio Rossi"],["cong","Congregazione","i","Valleve"],["invito","Invito all’uditorio","i","Prestiamo la massima attenzione."]];
+var P2=[["ringr","Ringraziamento","i","Oratore: Caio Rossi"],["comm","Commento","T",""],["prox","Discorso di settimana prossima","i","Tema:"],["inv2","","n","Siamo tutti invitati ad assistere"],["cond","Conduttore Torre di Guardia","i","Genny Bialino"]];
+var ALL=P1.concat(P2);
+var S=load(),page=1;
+function today(){var d=new Date(),m=d.getMonth()+1,g=d.getDate();return d.getFullYear()+"-"+(m<10?"0":"")+m+"-"+(g<10?"0":"")+g}
+function defaults(){var o={date:today(),f:{}};ALL.forEach(function(x){o.f[x[0]]=x[3]});return o}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.f)return o}}catch(e){}return defaults()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function longDate(v){if(!v)return"Scegli la data";var p=v.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")}
+function field(x){
+  var h=x[1]?'<div class="lab">'+esc(x[1])+':</div>':'';
+  if(x[2]==="t"||x[2]==="T")return h+'<textarea class="f'+(x[2]==="T"?' big':'')+'" data-k="'+x[0]+'">'+esc(S.f[x[0]]||"")+'</textarea>';
+  return h+'<input class="f'+(x[2]==="n"?' n':'')+'" data-k="'+x[0]+'" value="'+esc(S.f[x[0]]||"")+'">';
+}
+function go(n){page=n;render();window.scrollTo(0,0)}
+function render(){
+  var a=document.getElementById("app");
+  ["t1","t2","tt"].forEach(function(id,i){document.getElementById(id).className=(page===i+1)?"on":""});
+  if(page===3){
+    a.className="";
+    a.innerHTML='<div class="hd">Strumenti</div><div class="tools"><button onclick="pdf()">Salva come PDF</button><button onclick="share()">Condividi testo</button><button onclick="copyTxt()">Copia testo</button><button onclick="dup()">Duplica per altra data</button><button onclick="reset()">Azzera modulo</button></div><div id="msg"></div>';
+    return;
+  }
+  var isOne=page===1;
+  a.className=isOne?"p1":"p2";
+  a.innerHTML='<div class="hd">'+(isOne?"Inizio adunanza":"Fine del discorso")+'</div>'
+   +'<input type="date" class="date" id="dt" value="'+S.date+'">'
+   +(isOne?P1:P2).map(field).join("");
+  var dt=document.getElementById("dt");
+  dt.addEventListener("change",function(){S.date=dt.value;save()});
+  a.querySelectorAll("[data-k]").forEach(function(el){el.addEventListener("input",function(){S.f[el.dataset.k]=el.value;save()})});
+}
+function text(){
+  var t=[];
+  function sec(title,arr){t.push(title.toUpperCase());t.push(longDate(S.date));t.push("");arr.forEach(function(x){var v=S.f[x[0]]||"";if(x[1])t.push(x[1]+": "+v);else t.push(v)});t.push("")}
+  sec("Inizio adunanza",P1);sec("Fine del discorso",P2);
+  return t.join("\n").trim();
+}
+function pdf(){
+  function pg(title,cls,arr){return '<div class="pg"><div class="hd '+cls+'">'+title+'</div><div class="d">'+esc(longDate(S.date))+'</div>'+arr.map(function(x){return (x[1]?'<div class="l">'+esc(x[1])+':</div>':'')+'<div class="v'+(x[2]==="t"||x[2]==="T"?' t':'')+(x[2]==="n"?' n':'')+'">'+esc(S.f[x[0]]||"")+'</div>'}).join("")+'</div>'}
+  document.getElementById("pr").innerHTML='<div class="p1">'+pg("Inizio adunanza","",P1)+'</div><div class="p2">'+pg("Fine del discorso","",P2)+'</div>';
+  window.print();
+}
+function say(m){var e=document.getElementById("msg");if(e)e.textContent=m}
+function share(){
+  var t=text();
+  if(navigator.share){navigator.share({text:t}).catch(function(){})}else copyTxt();
+}
+function copyTxt(){
+  var t=text();
+  try{navigator.clipboard.writeText(t).then(function(){say("Testo copiato.")},function(){fb(t)})}catch(e){fb(t)}
+}
+function fb(t){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");say("Testo copiato.")}catch(e){say("Copia non riuscita.")}document.body.removeChild(ta)}
+function dup(){
+  var p=(S.date||today()).split("-"),d=new Date(+p[0],+p[1]-1,+p[2]+7),m=d.getMonth()+1,g=d.getDate();
+  S.date=d.getFullYear()+"-"+(m<10?"0":"")+m+"-"+(g<10?"0":"")+g;
+  S.f.ben="";S.f.comm="";save();say("Nuova data: "+longDate(S.date)+". Benvenuto e Commento svuotati.");
+}
+function reset(){
+  if(confirm("Azzerare tutti i campi?")){S=defaults();save();say("Modulo azzerato.")}
+}
+render();
+if("serviceWorker" in navigator&&/^https?:/.test(location.protocol)){navigator.serviceWorker.register("sw.js").catch(function(){})}
+</script>
+</body>
+</html>
